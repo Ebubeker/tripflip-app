@@ -3,7 +3,8 @@ import { insertStay } from "@/lib/api/trip";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import React, { useCallback, useState } from "react";
+import { ArrowLeft } from "lucide-react-native";
+import { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Dimensions,
@@ -14,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import GetRecommendations from "./recommendation/GetRecommendations";
 
 interface AddFlightModalProps {
   tripId: string;
@@ -36,6 +38,7 @@ const AddStayModal = ({
   setShow,
   refetch,
 }: AddFlightModalProps) => {
+  const [showGetRecommendations, setGetRecommendations] = useState(false);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [hasSelectedStart, setHasSelectedStart] = useState(false);
@@ -81,7 +84,6 @@ const AddStayModal = ({
     )
       .then((data) => {
         refetch();
-        console.log(data);
       })
       .catch((error) => {
         console.error("Error inserting flight:", error);
@@ -236,181 +238,244 @@ const AddStayModal = ({
 
   return (
     <CustomModal show={show} setShow={setShow} title="Add a stay">
-      <View className="mb-4">
-        <Controller
-          control={control}
-          name="hotelName"
-          render={({ field: { onChange, value } }) => (
-            <TextInput
-              className="border px-4 py-3 rounded-md border-black/20 w-full text-base font-lato"
+      <View>
+        {!showGetRecommendations ? (
+          <>
+            <TouchableOpacity
+              className="bg-primary py-3 rounded-lg w-full"
+              onPress={() => setGetRecommendations(true)}
+            >
+              <Text className="text-white font-semibold text-center text-base font-lato-bold">
+                Get Recommendations
+              </Text>
+            </TouchableOpacity>
+            <View
               style={{
-                height: 48,
-                paddingVertical: Platform.OS === "ios" ? 12 : 8,
-                paddingTop: Platform.OS === "ios" ? 8 : 12,
-                lineHeight: Platform.OS === "ios" ? 20 : undefined,
-                borderColor: errors.hotelName ? "red" : "rgba(0,0,0,0.2)",
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+                marginVertical: 16,
+                opacity: 0.5,
               }}
-              placeholder="Name"
-              onChangeText={onChange}
-              value={value}
-              autoCapitalize="none"
-              autoCorrect={false}
-              placeholderTextColor="rgba(0,0,0,0.5)"
-            />
-          )}
-        />
-        {errors.hotelName && (
-          <Text style={{ color: "red", fontSize: 12, marginTop: 4 }}>
-            {errors.hotelName.message}
-          </Text>
+            >
+              <Text
+                className="font-lato text-sm border p-2 rounded-full"
+                style={{ paddingTop: 3.5, paddingBottom: 5 }}
+              >
+                or
+              </Text>
+            </View>
+          </>
+        ) : (
+          <>
+            <TouchableOpacity
+              onPress={() => setGetRecommendations(false)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <ArrowLeft color={"#FF8CBE"} />
+              <Text className="font-lato text-xl">Go Back</Text>
+            </TouchableOpacity>
+          </>
         )}
       </View>
-
-      <Controller
-        control={control}
-        name="price"
-        rules={{
-          required: "Price is required",
-          pattern: {
-            value: /^\d+(\.\d{1,2})?$/,
-            message: "Please enter a valid price",
-          },
-        }}
-        render={({ field: { onChange, value } }) => (
+      {showGetRecommendations ? (
+        <GetRecommendations
+          type="stay"
+          fetch
+          tripId={tripId}
+          refetch={refetch}
+          setShow={setShow}
+        />
+      ) : (
+        <>
           <View className="mb-4">
-            <TextInput
-              className="border px-4 py-3 rounded-md border-black/20 w-full text-base font-lato"
-              style={{
-                height: 48,
-                paddingVertical: Platform.OS === "ios" ? 12 : 8,
-                paddingTop: Platform.OS === "ios" ? 8 : 12,
-                lineHeight: Platform.OS === "ios" ? 20 : undefined,
-                borderColor: errors.price ? "red" : "rgba(0,0,0,0.2)",
-              }}
-              keyboardType="numeric"
-              placeholder="Price per night"
-              onChangeText={onChange}
-              value={value}
-              autoCapitalize="none"
-              autoCorrect={false}
-              placeholderTextColor="rgba(0,0,0,0.5)"
+            <Controller
+              control={control}
+              name="hotelName"
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  className="border px-4 py-3 rounded-md border-black/20 w-full text-base font-lato"
+                  style={{
+                    height: 48,
+                    paddingVertical: Platform.OS === "ios" ? 12 : 8,
+                    paddingTop: Platform.OS === "ios" ? 8 : 12,
+                    lineHeight: Platform.OS === "ios" ? 20 : undefined,
+                    borderColor: errors.hotelName ? "red" : "rgba(0,0,0,0.2)",
+                  }}
+                  placeholder="Name"
+                  onChangeText={onChange}
+                  value={value}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  placeholderTextColor="rgba(0,0,0,0.5)"
+                />
+              )}
             />
-            {errors.price && (
-              <Text style={{ color: "red", fontSize: 12, marginBottom: 16 }}>
-                {errors.price.message}
+            {errors.hotelName && (
+              <Text style={{ color: "red", fontSize: 12, marginTop: 4 }}>
+                {errors.hotelName.message}
               </Text>
             )}
           </View>
-        )}
-      />
 
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          marginBottom: 14,
-        }}
-      >
-        <View style={{ width: modalWidth * 0.5 - 6 }}>
-          <TouchableOpacity
-            onPress={() => setShowStartPicker(true)}
+          <Controller
+            control={control}
+            name="price"
+            rules={{
+              required: "Price is required",
+              pattern: {
+                value: /^\d+(\.\d{1,2})?$/,
+                message: "Please enter a valid price",
+              },
+            }}
+            render={({ field: { onChange, value } }) => (
+              <View className="mb-4">
+                <TextInput
+                  className="border px-4 py-3 rounded-md border-black/20 w-full text-base font-lato"
+                  style={{
+                    height: 48,
+                    paddingVertical: Platform.OS === "ios" ? 12 : 8,
+                    paddingTop: Platform.OS === "ios" ? 8 : 12,
+                    lineHeight: Platform.OS === "ios" ? 20 : undefined,
+                    borderColor: errors.price ? "red" : "rgba(0,0,0,0.2)",
+                  }}
+                  keyboardType="numeric"
+                  placeholder="Price per night"
+                  onChangeText={onChange}
+                  value={value}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  placeholderTextColor="rgba(0,0,0,0.5)"
+                />
+                {errors.price && (
+                  <Text
+                    style={{ color: "red", fontSize: 12, marginBottom: 16 }}
+                  >
+                    {errors.price.message}
+                  </Text>
+                )}
+              </View>
+            )}
+          />
+
+          <View
             style={{
-              height: 48,
-              borderWidth: 1,
-              borderColor: "rgba(0,0,0,0.2)",
-              borderRadius: 4,
-              paddingHorizontal: 12,
-              justifyContent: "center",
-              backgroundColor: "white",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginBottom: 14,
             }}
           >
-            <Text
-              style={{
-                fontSize: 14,
-                color: hasSelectedStart ? "black" : "rgba(0,0,0,0.5)",
-              }}
-            >
-              {hasSelectedStart
-                ? `Start Date: ${formatDate(startDate)}`
-                : "Select Start Date"}
-            </Text>
-          </TouchableOpacity>
-        </View>
+            <View style={{ width: modalWidth * 0.5 - 6 }}>
+              <TouchableOpacity
+                onPress={() => setShowStartPicker(true)}
+                style={{
+                  height: 48,
+                  borderWidth: 1,
+                  borderColor: "rgba(0,0,0,0.2)",
+                  borderRadius: 4,
+                  paddingHorizontal: 12,
+                  justifyContent: "center",
+                  backgroundColor: "white",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: hasSelectedStart ? "black" : "rgba(0,0,0,0.5)",
+                  }}
+                >
+                  {hasSelectedStart
+                    ? `Start Date: ${formatDate(startDate)}`
+                    : "Select Start Date"}
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-        <View style={{ width: modalWidth * 0.5 - 6 }}>
-          <TouchableOpacity
-            onPress={() => setShowEndPicker(true)}
-            className="w-full"
-            style={{
-              height: 48,
-              borderWidth: 1,
-              borderColor: "rgba(0,0,0,0.2)",
-              borderRadius: 4,
-              paddingHorizontal: 12,
-              justifyContent: "center",
-              backgroundColor: "white",
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 14,
-                color: hasSelectedEnd ? "black" : "rgba(0,0,0,0.5)",
-              }}
-            >
-              {hasSelectedEnd
-                ? `End Date: ${formatDate(endDate)}`
-                : "Select End Date"}
-            </Text>
-          </TouchableOpacity>
-        </View>
+            <View style={{ width: modalWidth * 0.5 - 6 }}>
+              <TouchableOpacity
+                onPress={() => setShowEndPicker(true)}
+                className="w-full"
+                style={{
+                  height: 48,
+                  borderWidth: 1,
+                  borderColor: "rgba(0,0,0,0.2)",
+                  borderRadius: 4,
+                  paddingHorizontal: 12,
+                  justifyContent: "center",
+                  backgroundColor: "white",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: hasSelectedEnd ? "black" : "rgba(0,0,0,0.5)",
+                  }}
+                >
+                  {hasSelectedEnd
+                    ? `End Date: ${formatDate(endDate)}`
+                    : "Select End Date"}
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-        {renderDatePicker(
-          showStartPicker,
-          startDate,
-          onStartDateChange,
-          new Date()
-        )}
-        {renderDatePicker(showEndPicker, endDate, onEndDateChange, startDate)}
-      </View>
+            {renderDatePicker(
+              showStartPicker,
+              startDate,
+              onStartDateChange,
+              new Date()
+            )}
+            {renderDatePicker(
+              showEndPicker,
+              endDate,
+              onEndDateChange,
+              startDate
+            )}
+          </View>
 
-      <View className="mb-4">
-        <Controller
-          control={control}
-          name="address"
-          render={({ field: { onChange, value } }) => (
-            <TextInput
-              className="border px-4 py-3 rounded-md border-black/20 w-full text-base font-lato"
-              style={{
-                height: 48,
-                paddingVertical: Platform.OS === "ios" ? 12 : 8,
-                paddingTop: Platform.OS === "ios" ? 8 : 12,
-                lineHeight: Platform.OS === "ios" ? 20 : undefined,
-                borderColor: errors.hotelName ? "red" : "rgba(0,0,0,0.2)",
-              }}
-              placeholder="Address (optional)"
-              onChangeText={onChange}
-              value={value}
-              autoCapitalize="none"
-              autoCorrect={false}
-              placeholderTextColor="rgba(0,0,0,0.5)"
+          <View className="mb-4">
+            <Controller
+              control={control}
+              name="address"
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  className="border px-4 py-3 rounded-md border-black/20 w-full text-base font-lato"
+                  style={{
+                    height: 48,
+                    paddingVertical: Platform.OS === "ios" ? 12 : 8,
+                    paddingTop: Platform.OS === "ios" ? 8 : 12,
+                    lineHeight: Platform.OS === "ios" ? 20 : undefined,
+                    borderColor: errors.hotelName ? "red" : "rgba(0,0,0,0.2)",
+                  }}
+                  placeholder="Address (optional)"
+                  onChangeText={onChange}
+                  value={value}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  placeholderTextColor="rgba(0,0,0,0.5)"
+                />
+              )}
             />
-          )}
-        />
-        {errors.address && (
-          <Text style={{ color: "red", fontSize: 12, marginTop: 4 }}>
-            {errors.address.message}
-          </Text>
-        )}
-      </View>
+            {errors.address && (
+              <Text style={{ color: "red", fontSize: 12, marginTop: 4 }}>
+                {errors.address.message}
+              </Text>
+            )}
+          </View>
 
-      <TouchableOpacity
-        className="bg-primary py-3 rounded-lg w-full"
-        onPress={handleSubmit(onSubmit)}
-      >
-        <Text className="text-white font-semibold text-center text-base font-lato-bold">
-          Add Stay
-        </Text>
-      </TouchableOpacity>
+          <TouchableOpacity
+            className="bg-primary py-3 rounded-lg w-full"
+            onPress={handleSubmit(onSubmit)}
+          >
+            <Text className="text-white font-semibold text-center text-base font-lato-bold">
+              Add Stay
+            </Text>
+          </TouchableOpacity>
+        </>
+      )}
     </CustomModal>
   );
 };

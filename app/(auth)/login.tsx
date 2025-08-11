@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
-import { Link } from "expo-router";
-import React, { useState } from "react";
+import { Link, useRouter } from "expo-router";
+import { useState } from "react";
 import {
   Alert,
   Dimensions,
@@ -15,6 +15,8 @@ import Svg, { Path } from "react-native-svg";
 const { width, height } = Dimensions.get("window");
 
 const Login = () => {
+  const router = useRouter();
+
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -58,7 +60,7 @@ const Login = () => {
         style={{
           paddingTop: contentPadding,
           paddingBottom: contentPadding,
-          zIndex: 1,
+          zIndex: 10,
         }}
       >
         <View className="w-full max-w-[300px] items-center">
@@ -73,9 +75,9 @@ const Login = () => {
             className="border px-4 py-3 rounded-md border-black/20 w-full mb-4 text-base font-lato"
             style={{
               height: 48,
-              paddingVertical: Platform.OS === 'ios' ? 12 : 8,
-              paddingTop: Platform.OS === 'ios' ? 8 : 12,
-              lineHeight: Platform.OS === 'ios' ? 20 : undefined,
+              paddingVertical: Platform.OS === "ios" ? 12 : 8,
+              paddingTop: Platform.OS === "ios" ? 8 : 12,
+              lineHeight: Platform.OS === "ios" ? 20 : undefined,
             }}
             placeholder="Email"
             onChangeText={setEmail}
@@ -90,9 +92,9 @@ const Login = () => {
             className="h-12 border px-4 py-3 rounded-md border-black/20 w-full mb-6 text-base font-lato"
             style={{
               height: 48,
-              paddingVertical: Platform.OS === 'ios' ? 12 : 8,
-              paddingTop: Platform.OS === 'ios' ? 8 : 12,
-              lineHeight: Platform.OS === 'ios' ? 20 : undefined,
+              paddingVertical: Platform.OS === "ios" ? 12 : 8,
+              paddingTop: Platform.OS === "ios" ? 8 : 12,
+              lineHeight: Platform.OS === "ios" ? 20 : undefined,
             }}
             onChangeText={setPassword}
             value={password}
@@ -103,6 +105,13 @@ const Login = () => {
             placeholderTextColor="rgba(0,0,0,0.5)"
           />
 
+          {/* <View
+            onTouchStart={() => router.replace("/subscription")}
+            className="bg-primary rounded-full p-2"
+          >
+            <Text className="text-white font-lato">Subscriptions</Text>
+          </View> */}
+
           <TouchableOpacity
             className="bg-primary py-3 rounded-lg w-full"
             onPress={loginWithEmail}
@@ -111,6 +120,44 @@ const Login = () => {
               Login
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push("/forget-password")}
+            className="text-right"
+            style={{
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              // backgroundColor: "red",
+              width: "100%",
+            }}
+          >
+            <Text
+              className="font-lato text-sm text-primary underline"
+              style={{
+                marginTop: 4,
+              }}
+            >
+              Forgot password
+            </Text>
+          </TouchableOpacity>
+          {/* <TouchableOpacity
+            onPress={() => router.push("/reset-password")}
+            className="text-right"
+            style={{
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              // backgroundColor: "red",
+              width: "100%",
+            }}
+          >
+            <Text
+              className="font-lato text-sm text-primary underline"
+              style={{
+                marginTop: 4,
+              }}
+            >
+              Reset
+            </Text>
+          </TouchableOpacity> */}
           <Text className="text-sm mt-4 text-black/70 text-center mb-6 leading-5 font-lato">
             You do not have an account? Then{" "}
             <Link href="/register" asChild>

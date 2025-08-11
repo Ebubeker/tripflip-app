@@ -4,7 +4,7 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Dimensions,

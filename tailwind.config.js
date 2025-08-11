@@ -7,7 +7,8 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#FF8CBE"
+        primary: "#FF8CBE",
+        gold: "#ffd500"
       },
       fontFamily: {
         'lato': ['Lato-Regular'],

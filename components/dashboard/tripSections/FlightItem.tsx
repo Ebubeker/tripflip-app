@@ -90,16 +90,33 @@ const FlightItem: React.FC<FlightItemProps> = ({ flight, onPress }) => {
         </View>
       </View>
 
-      <View className="flex-row items-center justify-between mb-4">
+      <View
+        className="flex-row items-center justify-between"
+        style={{ marginBottom: 2 }}
+      >
         <View className="flex-1 flex-row items-center">
-          <Text className="font-lato-bold text-2xl" style={{color: '#1c2230'}}>
+          <Text
+            className="font-lato-bold text-2xl"
+            style={{ color: "#1c2230" }}
+          >
             {flight.origin_airport}
           </Text>
-          <Minus color={"#1c2230"}/>
-          <Text className="font-lato-bold text-2xl" style={{color: '#1c2230'}}>
+          <Minus color={"#1c2230"} />
+          <Text
+            className="font-lato-bold text-2xl"
+            style={{ color: "#1c2230" }}
+          >
             {flight.destination_airport}
           </Text>
         </View>
+      </View>
+
+      <View style={{ marginBottom: 2 }}>
+        {flight.airline && (
+          <Text className="font-lato text-sm text-gray-700">
+            {flight.airline}
+          </Text>
+        )}
       </View>
 
       <View className="flex-row justify-between items-center mb-3">
@@ -120,7 +137,7 @@ const FlightItem: React.FC<FlightItemProps> = ({ flight, onPress }) => {
           )}
         </View>
 
-        <View className="flex-1 items-center">
+        {/* <View className="flex-1 items-center">
           {flight.airline && (
             <Text className="font-lato text-sm text-gray-700">
               {flight.airline}
@@ -131,7 +148,7 @@ const FlightItem: React.FC<FlightItemProps> = ({ flight, onPress }) => {
               Seat {flight.seat_number}
             </Text>
           )}
-        </View>
+        </View> */}
 
         <View className="flex-1 items-end">
           <Text
@@ -156,20 +173,7 @@ const FlightItem: React.FC<FlightItemProps> = ({ flight, onPress }) => {
           <Text className="font-lato-bold text-xl text-gray-900">
             {flight.currency} {flight.price}
           </Text>
-          {flight.booking_reference && (
-            <Text className="font-lato text-xs text-gray-500">
-              Ref: {flight.booking_reference}
-            </Text>
-          )}
         </View>
-
-        {flight.notes && (
-          <View className="flex-1 items-end">
-            <Text className="font-lato text-xs text-gray-600 text-right">
-              {flight.notes}
-            </Text>
-          </View>
-        )}
       </View>
     </TouchableOpacity>
   );

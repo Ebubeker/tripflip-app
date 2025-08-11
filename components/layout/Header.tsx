@@ -1,7 +1,12 @@
-import React from "react";
-import { Platform, Text, View } from "react-native";
+import { useUser } from "@/hooks/useUser";
+import { useRouter } from "expo-router";
+import { Image, Platform, TouchableOpacity, View } from "react-native";
 
 const Header = () => {
+  const router = useRouter();
+
+  const { user } = useUser();
+
   return (
     <View
       className="bg-white border-b mb-5 flex flex-row items-center justify-between"
@@ -17,18 +22,33 @@ const Header = () => {
         // Account for status bar
       }}
     >
-      <Text className="font-lato-bold text-primary" style={{ fontSize: 20, fontWeight: "bold" }}>TravelApp</Text>
-      <View
+      <TouchableOpacity onPress={() => router.replace("/")}>
+        <Image
+          source={require("../../assets/images/logo.png")}
+          style={{
+            width: 110,
+            height: 37
+          }}
+        />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => router.replace("/profile")}
         className="w-[50px] h-[50px] bg-blue-500 items-center justify-center"
-        style={{ width: 50, borderRadius: 50 }}
+        style={{ width: 50, height: 50, borderRadius: 50 }}
       >
-        <Text
-          className="text-[40px] text-white font-lato-bold"
-          style={{ fontSize: 20, fontWeight: "bold" }}
-        >
-          U
-        </Text>
-      </View>
+        <Image
+          source={
+            user && user.avatar_url
+              ? { uri: user.avatar_url }
+              : require("../../assets/images/traveler.png")
+          }
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: 50,
+          }}
+        />
+      </TouchableOpacity>
     </View>
   );
 };

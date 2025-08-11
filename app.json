@@ -1,22 +1,28 @@
 {
   "expo": {
-    "name": "travelApp",
-    "slug": "travelApp",
+    "name": "tripflip",
+    "platforms": ["ios", "android"],
+    "slug": "tripflip",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "travelapp",
+    "scheme": "tripflip",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ebubeker.tripflip",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.ebubeker.tripflip"
     },
     "web": {
       "bundler": "metro",
@@ -33,10 +39,24 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your trips.",
+          "cameraPermission": "The app accesses your camera to let you take photos for your trips."
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1074b7b5-c90c-49ab-890a-f49f51fd8fed"
+      }
     }
   }
 }

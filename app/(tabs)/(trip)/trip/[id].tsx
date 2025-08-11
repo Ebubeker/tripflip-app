@@ -1,16 +1,24 @@
 import AIAssistant from "@/components/dashboard/AIAssistant";
 import TripDetails from "@/components/dashboard/TripDetails";
 import { useLocalSearchParams } from 'expo-router';
-import React, { useState } from "react";
+import { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 const TripPage = () => {
   const { id } = useLocalSearchParams();
   const [tabs, setTabs] = useState("trip");
+  // const [tripId, setTripId] = useState<string | undefined>(undefined);
 
   if (!id) {
     return <Text>Loading...</Text>;
   }
+
+  // useEffect(() => {
+  //   if(id && id !== tripId) {
+  //     setTripId(id as string);
+  //   }
+  // }, [id])
+  
 
   return (
     <View className="bg-white h-full">
