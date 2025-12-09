@@ -51,12 +51,15 @@ const TripDetails = ({ tripId }: { tripId: string }) => {
     return count;
   };
 
+  // Use trip budget if set, otherwise default to 1500
+  const tripBudget = trip?.budget || 1500;
+
   const { inboundFlight, returnFlight, recommendations, loading, failed, refetch: recommendationRefetch } =
     useRecommendations(
       {
         destination_city: trip ? trip.destination_city.toLowerCase() : "",
         destination_country: trip ? trip.countries[0].toLowerCase() : "",
-        budget: 1500,
+        budget: tripBudget,
         passengers: {
           adults: trip?.passengers || 1,
           children: 0,
@@ -81,7 +84,7 @@ const TripDetails = ({ tripId }: { tripId: string }) => {
   const sampleBudgetData = useGetBudgetDetails(
     flights ? flights : [],
     stays ? stays : [],
-    1500,
+    tripBudget,
     recommendations ? recommendations : undefined
   );
 

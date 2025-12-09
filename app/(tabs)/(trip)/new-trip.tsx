@@ -40,6 +40,11 @@ const schema = yup.object().shape({
     .min(1, "At least 1 passenger"),
   selectedClass: yup.string().required("Select a class"),
   selectedItems: yup.array().min(1, "Select at least one country"),
+  budget: yup
+    .number()
+    .transform((value, originalValue) => originalValue === "" ? undefined : value)
+    .nullable()
+    .min(0, "Budget cannot be negative"),
 });
 
 const NewTrip = () => {
@@ -72,6 +77,7 @@ const NewTrip = () => {
       passengers: 1,
       selectedClass: "economy",
       selectedItems: [],
+      budget: undefined,
     },
   });
 
@@ -277,7 +283,9 @@ const NewTrip = () => {
       user.id,
       parseInt(data.passengers),
       data.selectedClass,
-      tripImageURI || ""
+      tripImageURI || "",
+      data.budget ? parseFloat(data.budget) : undefined,
+      "USD"
     );
 
     try {
@@ -509,6 +517,74 @@ const NewTrip = () => {
               <Text style={{ color: "red" }}>
                 {errors.selectedItems.message}
               </Text>
+            )}
+          </View>
+        )}
+      />
+
+      {/* Budget Input */}
+      <Controller
+        control={control}
+        name="budget"
+        render={({ field: { onChange, value } }) => (
+          <View style={{ marginBottom: 12 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                borderWidth: 1,
+                borderColor: "rgba(0,0,0,0.2)",
+                borderRadius: 8,
+                backgroundColor: "white",
+                overflow: "hidden",
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: "#FF8CBE",
+                  paddingHorizontal: 14,
+                  height: 48,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "white",
+                    fontWeight: "600",
+                    fontSize: 14,
+                  }}
+                >
+                  USD
+                </Text>
+              </View>
+              <TextInput
+                placeholder="Trip Budget (optional)"
+                keyboardType="numeric"
+                value={value ? value.toString() : ""}
+                onChangeText={onChange}
+                placeholderTextColor={"rgba(0,0,0,0.5)"}
+                className="flex-1 px-4 py-3 text-base font-lato"
+                style={{
+                  height: 48,
+                  paddingVertical: Platform.OS === "ios" ? 12 : 8,
+                  paddingTop: Platform.OS === "ios" ? 8 : 12,
+                  lineHeight: Platform.OS === "ios" ? 20 : undefined,
+                }}
+              />
+            </View>
+            <Text
+              style={{
+                fontSize: 11,
+                color: "rgba(0,0,0,0.5)",
+                marginTop: 4,
+                marginLeft: 4,
+              }}
+            >
+              Set a budget to track your trip expenses
+            </Text>
+            {errors.budget && (
+              <Text style={{ color: "red" }}>{errors.budget.message}</Text>
             )}
           </View>
         )}

@@ -3,11 +3,19 @@ type AccommodationType = 'hotel' | 'apartment' | 'hostel';
 type FlightStatus = 'available' | 'booked' | 'cancelled';
 type AccommodationStatus = 'available' | 'booked' | 'cancelled';
 
+interface FlightBookingLinks {
+  googleFlights: string;
+  skyscanner: string;
+  kayak: string;
+}
+
 interface Flight {
   airline: string;
   arrival_date: string;
   arrival_time: string;
   booking_reference: string;
+  booking_link?: string;
+  booking_links?: FlightBookingLinks;
   created_at: string;
   currency: Currency;
   departure_date: string;
@@ -18,10 +26,12 @@ interface Flight {
   id: number | null;
   is_direct: boolean;
   is_return_flight: boolean;
+  is_estimated_price?: boolean;
   notes: string;
   origin_airport: string;
   origin_city: string;
   price: number;
+  price_range?: { min: number; max: number };
   seat_number: string | null;
   segments_count: number;
   status: FlightStatus;
@@ -33,10 +43,18 @@ interface Flight {
   trip_id: string;
 }
 
+interface HotelBookingLinks {
+  bookingCom: string;
+  hotelsCom: string;
+  expedia: string;
+  airbnb: string;
+}
+
 interface Stay {
   address: string;
   amenities: string[] | null;
   booking_link: string;
+  booking_links?: HotelBookingLinks;
   booking_reference: string | null;
   check_in_date: string;
   check_in_time: string;
@@ -49,14 +67,17 @@ interface Stay {
   email: string | null;
   guests_count: number;
   id: number;
+  is_verified?: boolean;
   name: string;
   nights_count: number;
   notes: string;
   phone: string | null;
   photo: string;
   price_per_night: number;
+  price_range?: { min: number; max: number };
   rating: number;
   room_type: string | null;
+  stars?: number;
   status: AccommodationStatus;
   total_price: number;
   trip_id: string;
@@ -110,6 +131,6 @@ interface TravelBookingResponse {
 }
 
 export type {
-  AccommodationStatus, AccommodationType, BudgetAnalysis, Currency, Flight, FlightStatus, Metadata, Stay, TravelBookingResponse, UserDetails
+  AccommodationStatus, AccommodationType, BudgetAnalysis, Currency, Flight, FlightBookingLinks, FlightStatus, HotelBookingLinks, Metadata, Stay, TravelBookingResponse, UserDetails
 };
 

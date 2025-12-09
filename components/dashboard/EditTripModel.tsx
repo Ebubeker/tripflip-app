@@ -65,6 +65,11 @@ const schema = yup.object().shape({
     .min(1, "At least 1 passenger"),
   selectedClass: yup.string().required("Select a class"),
   selectedItems: yup.array().min(1, "Select at least one country"),
+  budget: yup
+    .number()
+    .transform((value, originalValue) => originalValue === "" ? undefined : value)
+    .nullable()
+    .min(0, "Budget cannot be negative"),
 });
 
 interface EditTripModalProps {
@@ -100,6 +105,7 @@ const EditTripModal = ({ show, setShow, trip, onTripUpdated }: EditTripModalProp
       passengers: 1,
       selectedClass: "economy",
       selectedItems: [],
+      budget: undefined,
     },
   });
 
@@ -111,7 +117,8 @@ const EditTripModal = ({ show, setShow, trip, onTripUpdated }: EditTripModalProp
       setValue("passengers", trip.passengers);
       setValue("selectedClass", trip.selected_class || "economy");
       setValue("selectedItems", trip.countries || []);
-      
+      setValue("budget", trip.budget || undefined);
+
       const start = new Date(trip.start_date);
       const end = new Date(trip.end_date);
       setStartDate(start);
@@ -322,9 +329,9 @@ const EditTripModal = ({ show, setShow, trip, onTripUpdated }: EditTripModalProp
 
   const onSubmit = async (data: any) => {
     if (!user || !trip) return;
-    
+
     setLoading(true);
-    
+
     try {
       const tripData = formatTripForDatabase(
         data.tripName,
@@ -335,7 +342,9 @@ const EditTripModal = ({ show, setShow, trip, onTripUpdated }: EditTripModalProp
         user.id,
         parseInt(data.passengers),
         data.selectedClass,
-        tripImageURI || ""
+        tripImageURI || "",
+        data.budget ? parseFloat(data.budget) : undefined,
+        "USD"
       );
 
       onTripUpdated?.(tripData);
@@ -567,6 +576,75 @@ const EditTripModal = ({ show, setShow, trip, onTripUpdated }: EditTripModalProp
               {errors.selectedItems && (
                 <Text style={{ color: "red", fontSize: 12, marginTop: 4 }}>
                   {errors.selectedItems.message}
+                </Text>
+              )}
+            </View>
+          )}
+        />
+
+        {/* Budget Input */}
+        <Controller
+          control={control}
+          name="budget"
+          render={({ field: { onChange, value } }) => (
+            <View style={{ marginBottom: 12 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  borderWidth: 1,
+                  borderColor: "rgba(0,0,0,0.2)",
+                  borderRadius: 8,
+                  backgroundColor: "white",
+                  overflow: "hidden",
+                }}
+              >
+                <View
+                  style={{
+                    backgroundColor: "#FF8CBE",
+                    paddingHorizontal: 14,
+                    height: 48,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "white",
+                      fontWeight: "600",
+                      fontSize: 14,
+                    }}
+                  >
+                    USD
+                  </Text>
+                </View>
+                <TextInput
+                  placeholder="Trip Budget (optional)"
+                  keyboardType="numeric"
+                  value={value ? value.toString() : ""}
+                  onChangeText={onChange}
+                  placeholderTextColor={"rgba(0,0,0,0.5)"}
+                  style={{
+                    flex: 1,
+                    paddingHorizontal: 14,
+                    height: 48,
+                    fontSize: 14,
+                  }}
+                />
+              </View>
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: "rgba(0,0,0,0.5)",
+                  marginTop: 4,
+                  marginLeft: 4,
+                }}
+              >
+                Set a budget to track your trip expenses
+              </Text>
+              {errors.budget && (
+                <Text style={{ color: "red", fontSize: 12, marginTop: 4 }}>
+                  {errors.budget.message}
                 </Text>
               )}
             </View>

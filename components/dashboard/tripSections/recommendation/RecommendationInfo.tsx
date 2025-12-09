@@ -55,20 +55,29 @@ const RecommendationInfo = ({
     return type === "stay";
   };
 
-  const handleBooking = async () => {
+  const handleBooking = async (url?: string) => {
     try {
-      if (isStayData(selectedRec) && selectedRec.booking_link) {
-        await Linking.openURL(selectedRec.booking_link);
-      } else if (isFlightData(selectedRec) && selectedRec.notes) {
-        const bookingUrl = selectedRec.notes.match(
-          /Booking URL: (https?:\/\/[^\s]+)/
-        )?.[1];
-        if (bookingUrl) {
-          await Linking.openURL(bookingUrl);
+      let bookingUrl = url;
+
+      if (!bookingUrl) {
+        if (isStayData(selectedRec) && selectedRec.booking_link) {
+          bookingUrl = selectedRec.booking_link;
+        } else if (isFlightData(selectedRec)) {
+          // Try booking_link first, then booking_links.googleFlights, then extract from notes
+          bookingUrl = selectedRec.booking_link ||
+            selectedRec.booking_links?.googleFlights ||
+            selectedRec.notes?.match(/Booking URL: (https?:\/\/[^\s]+)/)?.[1];
         }
+      }
+
+      if (bookingUrl) {
+        await Linking.openURL(bookingUrl);
+      } else {
+        Alert.alert("No Booking Link", "No booking link available for this item.");
       }
     } catch (error) {
       console.error("Error opening booking URL:", error);
+      Alert.alert("Error", "Could not open the booking link. Please try again.");
     }
   };
 
@@ -480,6 +489,19 @@ const RecommendationInfo = ({
             {selectedRec.currency}
           </Text>
         </View>
+        {selectedRec.is_estimated_price && (
+          <Text
+            className="font-lato"
+            style={{
+              fontSize: 11,
+              color: "#F59E0B",
+              marginTop: 4,
+              fontStyle: "italic",
+            }}
+          >
+            Estimated price - verify on booking site
+          </Text>
+        )}
         {selectedRec.is_return_flight && (
           <Text
             className="font-lato"
@@ -493,6 +515,121 @@ const RecommendationInfo = ({
           </Text>
         )}
       </View>
+
+      {/* Booking Links Section */}
+      {selectedRec.booking_links && (
+        <View
+          style={{
+            backgroundColor: "#F0FDF4",
+            borderRadius: 12,
+            padding: 16,
+            marginBottom: 20,
+            borderWidth: 1,
+            borderColor: "#86EFAC",
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 12,
+            }}
+          >
+            <Ionicons name="link-outline" size={16} color="#16A34A" />
+            <Text
+              className="font-lato"
+              style={{
+                fontSize: 14,
+                fontWeight: "600",
+                color: "#16A34A",
+                marginLeft: 6,
+              }}
+            >
+              Book on these platforms
+            </Text>
+          </View>
+          <View style={{ gap: 8 }}>
+            <TouchableOpacity
+              onPress={() => handleBooking(selectedRec.booking_links?.googleFlights)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: "#FFFFFF",
+                padding: 10,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: "#E5E7EB",
+              }}
+            >
+              <Ionicons name="search" size={16} color="#4285F4" />
+              <Text
+                className="font-lato"
+                style={{ marginLeft: 8, color: "#374151", fontSize: 14 }}
+              >
+                Google Flights
+              </Text>
+              <Ionicons
+                name="open-outline"
+                size={14}
+                color="#9CA3AF"
+                style={{ marginLeft: "auto" }}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleBooking(selectedRec.booking_links?.skyscanner)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: "#FFFFFF",
+                padding: 10,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: "#E5E7EB",
+              }}
+            >
+              <Ionicons name="airplane" size={16} color="#00D775" />
+              <Text
+                className="font-lato"
+                style={{ marginLeft: 8, color: "#374151", fontSize: 14 }}
+              >
+                Skyscanner
+              </Text>
+              <Ionicons
+                name="open-outline"
+                size={14}
+                color="#9CA3AF"
+                style={{ marginLeft: "auto" }}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleBooking(selectedRec.booking_links?.kayak)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: "#FFFFFF",
+                padding: 10,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: "#E5E7EB",
+              }}
+            >
+              <Ionicons name="compass" size={16} color="#FF690F" />
+              <Text
+                className="font-lato"
+                style={{ marginLeft: 8, color: "#374151", fontSize: 14 }}
+              >
+                Kayak
+              </Text>
+              <Ionicons
+                name="open-outline"
+                size={14}
+                color="#9CA3AF"
+                style={{ marginLeft: "auto" }}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </View>
   )}
             {/* 
@@ -1087,7 +1224,159 @@ const RecommendationInfo = ({
                     >
                       ${Math.round(selectedRec.price_per_night)}/night
                     </Text>
+                    <Text
+                      className="font-lato"
+                      style={{
+                        fontSize: 11,
+                        color: "#F59E0B",
+                        marginTop: 4,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      Verify exact price on booking site
+                    </Text>
                   </View>
+
+                  {/* Hotel Booking Links Section */}
+                  {selectedRec.booking_links && (
+                    <View
+                      style={{
+                        backgroundColor: "#EFF6FF",
+                        borderRadius: 12,
+                        padding: 16,
+                        marginBottom: 16,
+                        borderWidth: 1,
+                        borderColor: "#93C5FD",
+                      }}
+                    >
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginBottom: 12,
+                        }}
+                      >
+                        <Ionicons name="bed-outline" size={16} color="#2563EB" />
+                        <Text
+                          className="font-lato"
+                          style={{
+                            fontSize: 14,
+                            fontWeight: "600",
+                            color: "#2563EB",
+                            marginLeft: 6,
+                          }}
+                        >
+                          Book on these platforms
+                        </Text>
+                      </View>
+                      <View style={{ gap: 8 }}>
+                        <TouchableOpacity
+                          onPress={() => handleBooking(selectedRec.booking_links?.bookingCom)}
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            backgroundColor: "#FFFFFF",
+                            padding: 10,
+                            borderRadius: 8,
+                            borderWidth: 1,
+                            borderColor: "#E5E7EB",
+                          }}
+                        >
+                          <Ionicons name="business" size={16} color="#003580" />
+                          <Text
+                            className="font-lato"
+                            style={{ marginLeft: 8, color: "#374151", fontSize: 14 }}
+                          >
+                            Booking.com
+                          </Text>
+                          <Ionicons
+                            name="open-outline"
+                            size={14}
+                            color="#9CA3AF"
+                            style={{ marginLeft: "auto" }}
+                          />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => handleBooking(selectedRec.booking_links?.hotelsCom)}
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            backgroundColor: "#FFFFFF",
+                            padding: 10,
+                            borderRadius: 8,
+                            borderWidth: 1,
+                            borderColor: "#E5E7EB",
+                          }}
+                        >
+                          <Ionicons name="bed" size={16} color="#D32F2F" />
+                          <Text
+                            className="font-lato"
+                            style={{ marginLeft: 8, color: "#374151", fontSize: 14 }}
+                          >
+                            Hotels.com
+                          </Text>
+                          <Ionicons
+                            name="open-outline"
+                            size={14}
+                            color="#9CA3AF"
+                            style={{ marginLeft: "auto" }}
+                          />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => handleBooking(selectedRec.booking_links?.expedia)}
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            backgroundColor: "#FFFFFF",
+                            padding: 10,
+                            borderRadius: 8,
+                            borderWidth: 1,
+                            borderColor: "#E5E7EB",
+                          }}
+                        >
+                          <Ionicons name="globe" size={16} color="#00355F" />
+                          <Text
+                            className="font-lato"
+                            style={{ marginLeft: 8, color: "#374151", fontSize: 14 }}
+                          >
+                            Expedia
+                          </Text>
+                          <Ionicons
+                            name="open-outline"
+                            size={14}
+                            color="#9CA3AF"
+                            style={{ marginLeft: "auto" }}
+                          />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => handleBooking(selectedRec.booking_links?.airbnb)}
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            backgroundColor: "#FFFFFF",
+                            padding: 10,
+                            borderRadius: 8,
+                            borderWidth: 1,
+                            borderColor: "#E5E7EB",
+                          }}
+                        >
+                          <Ionicons name="home" size={16} color="#FF5A5F" />
+                          <Text
+                            className="font-lato"
+                            style={{ marginLeft: 8, color: "#374151", fontSize: 14 }}
+                          >
+                            Airbnb
+                          </Text>
+                          <Ionicons
+                            name="open-outline"
+                            size={14}
+                            color="#9CA3AF"
+                            style={{ marginLeft: "auto" }}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
                 </View>
               )}
               {swap ? (

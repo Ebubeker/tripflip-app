@@ -13,6 +13,8 @@ export interface Trip {
   passengers: number;
   selected_class: string;
   selected_images: string;
+  budget?: number;
+  budget_currency?: string;
   created_at: string;
   updated_at: string;
 }
@@ -33,6 +35,8 @@ export const insertTrip = async (
         passengers: tripData.passengers,
         selected_class: tripData.selected_class,
         selected_images: tripData.selected_images,
+        budget: tripData.budget || null,
+        budget_currency: tripData.budget_currency || 'USD',
       },
     ])
     .select();
@@ -109,7 +113,9 @@ export const formatTripForDatabase = (
   userId: string,
   passengers: number,
   selectedClass: string,
-  selectedImages: string
+  selectedImages: string,
+  budget?: number,
+  budgetCurrency?: string
 ): Omit<Trip, "id" | "created_at" | "updated_at"> => {
   return {
     name: tripName,
@@ -121,6 +127,8 @@ export const formatTripForDatabase = (
     passengers: passengers,
     selected_class: selectedClass,
     selected_images: selectedImages,
+    budget: budget,
+    budget_currency: budgetCurrency || 'USD',
   };
 };
 
