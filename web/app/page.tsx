@@ -1,21 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { TripSearchForm } from "@/components/trip-search-form";
 import { TripResultCard } from "@/components/trip-result-card";
 import { TripSummary } from "@/components/trip-summary";
-import { TripSearchRequest, TripSearchResponse } from "@/lib/types";
+import { BudgetWidget } from "@/components/budget-widget";
+import { TripSearchRequest, TripSearchResponse, TripPackage, SavedTrip } from "@/lib/types";
+import { saveTripToStorage } from "@/lib/storage";
 import { Loader2, AlertCircle } from "lucide-react";
 
 export default function Home() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<TripSearchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useState<TripSearchRequest | null>(null);
 
-  const handleSearch = async (searchParams: TripSearchRequest) => {
+  const handleSearch = async (params: TripSearchRequest) => {
     setIsLoading(true);
     setError(null);
     setResults(null);
+    setSearchParams(params);
 
     try {
       const response = await fetch("/api/trip/search", {
@@ -23,7 +29,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(searchParams),
+        body: JSON.stringify(params),
       });
 
       if (!response.ok) {
@@ -39,6 +45,40 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+
+  const handleSaveTrip = (pkg: TripPackage) => {
+    if (!searchParams) return;
+
+    // Calculate end date
+    let endDate = searchParams.endDate;
+    if (!endDate && searchParams.nights) {
+      const startDate = new Date(searchParams.startDate);
+      const endDateObj = new Date(startDate);
+      endDateObj.setDate(startDate.getDate() + searchParams.nights);
+      endDate = endDateObj.toISOString().split("T")[0];
+    }
+
+    const tripId = `trip-${Date.now()}`;
+    const savedTrip: SavedTrip = {
+      id: tripId,
+      name: `${searchParams.origin} → ${searchParams.destination}`,
+      origin: searchParams.origin,
+      destination: searchParams.destination,
+      startDate: searchParams.startDate,
+      endDate: endDate || searchParams.startDate,
+      adults: searchParams.adults,
+      selectedPackage: pkg,
+      budget: searchParams.budget,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    saveTripToStorage(savedTrip);
+    router.push(`/trips/${tripId}`);
+  };
+
+  // Calculate the cheapest package for budget widget
+  const cheapestPackage = results?.packages[0]; // Already sorted by price
 
   return (
     <div className="space-y-8">
@@ -69,6 +109,15 @@ export default function Home() {
         <div className="space-y-6">
           {results.aiSummary && <TripSummary summary={results.aiSummary} />}
 
+          {/* Budget Widget */}
+          {searchParams?.budget && cheapestPackage && (
+            <BudgetWidget
+              budget={searchParams.budget}
+              currentCost={cheapestPackage.totalPrice}
+              currency={cheapestPackage.currency}
+            />
+          )}
+
           <div>
             <h2 className="text-2xl font-bold mb-4">
               Available Trip Packages ({results.packages.length})
@@ -83,6 +132,7 @@ export default function Home() {
                     key={pkg.id}
                     package_={pkg}
                     aiExplanation={aiRec?.explanation}
+                    onSaveTrip={() => handleSaveTrip(pkg)}
                   />
                 );
               })}
