@@ -33,6 +33,7 @@ export interface FlightOption {
   outboundSegments: FlightSegment[];
   returnSegments?: FlightSegment[];
   airline: string;
+  bookingLink: string;
 }
 
 // Hotel types
@@ -44,8 +45,9 @@ export interface HotelOption {
   currency: string;
   rating: number;
   location: string;
-  imageUrl?: string;
+  imageUrl: string;
   description?: string;
+  bookingLink: string;
 }
 
 // Trip package types
@@ -74,4 +76,27 @@ export interface TripSearchResponse {
   packages: TripPackage[];
   aiSummary?: AISummary;
   error?: string;
+}
+
+// Saved trip types
+export interface SavedTrip {
+  id: string;
+  name: string;
+  origin: string;
+  destination: string;
+  startDate: string;
+  endDate: string;
+  adults: number;
+  selectedPackage: TripPackage;
+  budget?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// User settings types
+export interface UserSettings {
+  travelStyle: "budget" | "standard" | "luxury";
+  preferredActivities: string[];
+  hotelPreferences: string;
+  dreamHotelStyle?: string;
 }

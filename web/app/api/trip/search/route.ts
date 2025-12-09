@@ -120,12 +120,9 @@ function buildPackages(
 ): TripPackage[] {
   const packages: TripPackage[] = [];
 
-  // Combine top flights with top hotels
-  const topFlights = flights.slice(0, 5);
-  const topHotels = hotels.slice(0, 5);
-
-  for (const flight of topFlights) {
-    for (const hotel of topHotels) {
+  // Combine ALL flights with ALL hotels to show all options
+  for (const flight of flights) {
+    for (const hotel of hotels) {
       const totalPrice = flight.totalPrice + hotel.totalPrice;
       const pricePerPerson = totalPrice / adults;
 
@@ -145,23 +142,14 @@ function buildPackages(
     }
   }
 
-  // Sort by total price and return top packages
+  // Sort by total price (cheapest first)
   packages.sort((a, b) => a.totalPrice - b.totalPrice);
 
-  // Return a mix of cheap, mid-range, and expensive options
-  const cheapest = packages.slice(0, 5);
-  const midRange = packages.slice(
-    Math.floor(packages.length / 3),
-    Math.floor(packages.length / 3) + 3
-  );
-  const premium = packages.slice(-3);
+  // Mark the cheapest package explicitly
+  if (packages.length > 0) {
+    packages[0].recommendationType = "Cheapest";
+  }
 
-  const finalPackages = [...cheapest, ...midRange, ...premium];
-
-  // Remove duplicates by id
-  const uniquePackages = Array.from(
-    new Map(finalPackages.map((pkg) => [pkg.id, pkg])).values()
-  );
-
-  return uniquePackages.slice(0, 10); // Return max 10 packages
+  // Return all packages (or limit to reasonable number like 20)
+  return packages.slice(0, 20);
 }

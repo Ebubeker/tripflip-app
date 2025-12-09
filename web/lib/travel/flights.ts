@@ -132,6 +132,13 @@ function mapAmadeusFlights(amadeusData: any[]): FlightOption[] {
         flightNumber: seg.number,
       }));
 
+    const origin = outboundSegments[0].departure.airport;
+    const destination = outboundSegments[outboundSegments.length - 1].arrival.airport;
+    const departureDate = outboundSegments[0].departure.time.split('T')[0].replace(/-/g, '');
+    const returnDate = returnSegments ? returnSegments[0].departure.time.split('T')[0].replace(/-/g, '') : '';
+
+    const bookingLink = `https://www.skyscanner.com/transport/flights/${origin}/${destination}/${departureDate}${returnDate ? '/' + returnDate : ''}/?adultsv2=1&cabinclass=economy&childrenv2=&ref=home&rtn=${returnDate ? '1' : '0'}&preferdirects=false&outboundaltsenabled=false&inboundaltsenabled=false`;
+
     return {
       id: offer.id,
       totalPrice: parseFloat(offer.price.total),
@@ -139,6 +146,7 @@ function mapAmadeusFlights(amadeusData: any[]): FlightOption[] {
       outboundSegments,
       returnSegments,
       airline: offer.validatingAirlineCodes[0] || outboundSegments[0].carrier,
+      bookingLink,
     };
   });
 }
@@ -149,13 +157,36 @@ function getMockFlights(
   departureDate: string,
   returnDate: string | null
 ): FlightOption[] {
-  const airlines = ["AA", "DL", "UA", "BA", "LH"];
-  const basePrice = 300 + Math.random() * 500;
+  // Realistic airline data with actual European carriers and budget airlines
+  const airlineData = [
+    { code: "FR", name: "Ryanair", priceMultiplier: 0.5 },
+    { code: "W6", name: "Wizz Air", priceMultiplier: 0.6 },
+    { code: "U2", name: "easyJet", priceMultiplier: 0.7 },
+    { code: "VY", name: "Vueling", priceMultiplier: 0.75 },
+    { code: "LH", name: "Lufthansa", priceMultiplier: 1.3 },
+    { code: "OS", name: "Austrian Airlines", priceMultiplier: 1.4 },
+    { code: "TK", name: "Turkish Airlines", priceMultiplier: 1.1 },
+  ];
 
-  return airlines.slice(0, 5).map((airline, idx) => {
-    const price = basePrice + idx * 50 + Math.random() * 100;
-    const departureTime = `${departureDate}T${8 + idx * 2}:00:00`;
-    const arrivalTime = `${departureDate}T${14 + idx * 2}:00:00`;
+  // Much more realistic base pricing
+  // European short-haul one-way: €30-80 base, return: €60-150 base
+  const isReturn = returnDate !== null;
+  const basePrice = isReturn ? 70 + Math.random() * 80 : 35 + Math.random() * 45;
+
+  return airlineData.map((airline, idx) => {
+    // Add variation and airline multiplier
+    const priceVariation = (Math.random() - 0.5) * 30;
+    const price = basePrice * airline.priceMultiplier + priceVariation + (idx * 8);
+
+    // Vary flight times realistically
+    const depHour = 6 + (idx * 2) % 16; // Between 6am and 10pm
+    const depMinute = Math.floor(Math.random() * 12) * 5; // 0, 5, 10, ..., 55
+    const flightDuration = 2 + Math.random() * 2; // 2-4 hours
+    const arrHour = depHour + Math.floor(flightDuration);
+    const arrMinute = depMinute + Math.floor((flightDuration % 1) * 60);
+
+    const departureTime = `${departureDate}T${depHour.toString().padStart(2, '0')}:${depMinute.toString().padStart(2, '0')}:00`;
+    const arrivalTime = `${departureDate}T${(arrHour % 24).toString().padStart(2, '0')}:${(arrMinute % 60).toString().padStart(2, '0')}:00`;
 
     const outboundSegments: FlightSegment[] = [
       {
@@ -167,16 +198,21 @@ function getMockFlights(
           airport: destination,
           time: arrivalTime,
         },
-        duration: "PT6H",
-        carrier: airline,
-        flightNumber: `${100 + idx}`,
+        duration: `PT${Math.floor(flightDuration)}H${Math.floor((flightDuration % 1) * 60)}M`,
+        carrier: airline.code,
+        flightNumber: `${airline.code}${1000 + idx * 13}`,
       },
     ];
 
     let returnSegments: FlightSegment[] | undefined;
     if (returnDate) {
-      const returnDepartureTime = `${returnDate}T${10 + idx * 2}:00:00`;
-      const returnArrivalTime = `${returnDate}T${16 + idx * 2}:00:00`;
+      const retDepHour = 8 + (idx * 2) % 14;
+      const retDepMinute = Math.floor(Math.random() * 12) * 5;
+      const retArrHour = retDepHour + Math.floor(flightDuration);
+      const retArrMinute = retDepMinute + Math.floor((flightDuration % 1) * 60);
+
+      const returnDepartureTime = `${returnDate}T${retDepHour.toString().padStart(2, '0')}:${retDepMinute.toString().padStart(2, '0')}:00`;
+      const returnArrivalTime = `${returnDate}T${(retArrHour % 24).toString().padStart(2, '0')}:${(retArrMinute % 60).toString().padStart(2, '0')}:00`;
 
       returnSegments = [
         {
@@ -188,20 +224,24 @@ function getMockFlights(
             airport: origin,
             time: returnArrivalTime,
           },
-          duration: "PT6H",
-          carrier: airline,
-          flightNumber: `${200 + idx}`,
+          duration: `PT${Math.floor(flightDuration)}H${Math.floor((flightDuration % 1) * 60)}M`,
+          carrier: airline.code,
+          flightNumber: `${airline.code}${2000 + idx * 13}`,
         },
       ];
     }
 
+    // Generate Skyscanner deep link for booking
+    const bookingLink = `https://www.skyscanner.com/transport/flights/${origin}/${destination}/${departureDate.replace(/-/g, '')}${returnDate ? '/' + returnDate.replace(/-/g, '') : ''}/?adultsv2=1&cabinclass=economy&childrenv2=&ref=home&rtn=${returnDate ? '1' : '0'}&preferdirects=false&outboundaltsenabled=false&inboundaltsenabled=false`;
+
     return {
-      id: `flight-${airline}-${idx}`,
+      id: `flight-${airline.code}-${idx}`,
       totalPrice: Math.round(price * 100) / 100,
-      currency: "USD",
+      currency: "EUR",
       outboundSegments,
       returnSegments,
-      airline,
+      airline: airline.name,
+      bookingLink,
     };
   });
 }
